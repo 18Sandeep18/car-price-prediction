@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chatbot Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        #chat-box {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        .bot, .user {
+            margin: 10px 0;
+            padding: 10px 14px;
+            border-radius: 6px;
+            width: fit-content;
+            max-width: 80%;
+        }
+        .bot {
+            background-color: #e3f2fd;
+            align-self: flex-start;
+        }
+        .user {
+            background-color: #c8e6c9;
+            align-self: flex-end;
+        }
+        input {
+            width: calc(100% - 80px);
+            padding: 10px;
+        }
+        button {
+            width: 70px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f4;">
+    <div>
+        <div id="chat-box"></div>
+        <div style="margin-top: 20px;">
+            <input type="text" id="user-input" placeholder="Type here..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const inputField = document.getElementById('user-input');
+
+        let step = 0;
+        let age = null;
+        let salary = null;
+
+        function addMessage(message, sender) {
+            const msg = document.createElement('div');
+            msg.className = sender;
+            msg.innerText = message;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendMessage() {
+            const msg = inputField.value.trim();
+            if (!msg) return;
+
+            addMessage(msg, 'user');
+
+            if (step === 0) {
+                age = parseFloat(msg);
+                addMessage("Got it! Now tell me your estimated salary.", 'bot');
+                step = 1;
+            } else if (step === 1) {
+                salary = parseFloat(msg);
+                addMessage("Let me predict that for you... 🤖", 'bot');
+
+                // Show "Typing..." bubble
+                const typing = document.createElement('div');
+                typing.className = 'bot';
+                typing.innerText = 'Predicting...';
+                typing.id = 'typing-bubble';
+                chatBox.appendChild(typing);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Simulate delay
+                setTimeout(() => {
+                    fetch('/chat-predict', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ age, salary })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        const typingEl = document.getElementById('typing-bubble');
+                        if (typingEl) chatBox.removeChild(typingEl);
+                        addMessage(data.result, 'bot');
+                        step = 2;
+                    });
+                }, 1500); // 1.5 second delay
+            }
+
+            inputField.value = '';
+        }
+
+        // Start the chat
+        window.onload = () => {
+            setTimeout(() => {
+                addMessage("Hi! I'm your car purchase prediction bot 🚗", 'bot');
+                setTimeout(() => {
+                    addMessage("Can you tell me your age?", 'bot');
+                }, 1000);
+            }, 500);
+        };
+    </script>
+</body>
+</html>
