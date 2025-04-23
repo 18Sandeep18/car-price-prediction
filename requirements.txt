@@ -162,3 +162,4 @@ Werkzeug==3.0.1
 wrapt==1.15.0
 xgboost==3.0.0
 yarl==1.14.0
+gunicorn
