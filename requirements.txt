@@ -83,7 +83,8 @@ networkx==3.1
 nibabel==5.3.0
 nipype==1.8.6
 nltk==3.9.1
-numpy>=1.23,<1.26
+numpy>=1.23
+numpy<1.26
 openai==1.73.0
 opencv-python==4.7.0.72
 packaging==23.2
